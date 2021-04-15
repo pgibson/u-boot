@@ -1,4 +1,4 @@
-if TARGET_CCIMX6ULSBC
+if TARGET_QCTECH
 
 config MCA
 	bool

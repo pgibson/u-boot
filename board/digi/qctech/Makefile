@@ -3,7 +3,7 @@
 # SPDX-License-Identifier:	GPL-2.0+
 #
 
-obj-y  := ccimx6ulsbc.o ../ccimx6ul/ccimx6ul.o
+obj-y  := qctech.o ../ccimx6ul/ccimx6ul.o
 ifdef CONFIG_HAS_HWID
 obj-y += ../ccimx6/ccimx6_hwid.o
 endif

@@ -254,6 +254,17 @@ config TARGET_CCIMX6ULSBC
 	select MCA
 	select MTD_UBI_SKIP_REATTACH
 
+config TARGET_QCTECH
+        bool "QCTech ConnectCore 6UL SBC Pro"
+        select MX6UL
+        select BOARD_LATE_INIT
+        select SUPPORT_SPL
+        select DM
+        select DM_THERMAL
+        select BOARD_EARLY_INIT_F
+        select MCA
+        select MTD_UBI_SKIP_REATTACH
+
 config TARGET_CCIMX6ULSTARTER
 	bool "Digi ConnectCore 6UL SBC Express"
 	select MX6UL
@@ -900,6 +911,7 @@ source "board/congatec/cgtqmx6eval/Kconfig"
 source "board/digi/ccimx6sbc/Kconfig"
 source "board/digi/ccimx6ulsbc/Kconfig"
 source "board/digi/ccimx6ulstarter/Kconfig"
+source "board/digi/qctech/Kconfig"
 source "board/dhelectronics/dh_imx6/Kconfig"
 source "board/el/el6x/Kconfig"
 source "board/embest/mx6boards/Kconfig"

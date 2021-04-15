@@ -1,62 +1,222 @@
 /*
- * Copyright (C) 2012-2013 Freescale Semiconductor, Inc.
- * Copyright (C) 2013-2019 Digi International, Inc.
+ * Copyright (C) 2016-2019 Digi International, Inc.
+ * Copyright (C) 2015 Freescale Semiconductor, Inc.
  *
- * Configuration settings for the Freescale i.MX6Q SabreSD board.
+ * Configuration settings for the Digi ConnecCore 6UL SBC board.
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.         See the
- * GNU General Public License for more details.
+ * SPDX-License-Identifier:	GPL-2.0+
  */
+#ifndef CCIMX6ULSBC_CONFIG_H
+#define CCIMX6ULSBC_CONFIG_H
 
-#ifndef __CCIMX6SBC_CONFIG_H
-#define __CCIMX6SBC_CONFIG_H
+#include "ccimx6ul_common.h"
 
-#include "ccimx6_common.h"
-#include <asm/mach-imx/gpio.h>
+#define CONFIG_BOARD_DESCRIPTION	"SBC Pro"
 
-#define CONFIG_MACH_TYPE		4899
+/* uncomment for PLUGIN mode support */
+/* #define CONFIG_USE_PLUGIN */
 
-#ifdef CONFIG_MX6QP
-#undef CONFIG_SYS_BOARD
-#define CONFIG_SYS_BOARD		"qctech"
+/* uncomment for BEE support, needs to enable CONFIG_CMD_FUSE */
+/* #define CONFIG_CMD_BEE */
+
+/* FLASH and environment organization */
+#if defined(CONFIG_NAND_BOOT)
+#define CONFIG_SYS_USE_NAND
+#define CONFIG_CMD_UPDATE_NAND
+#define CONFIG_SYS_STORAGE_MEDIA	"nand"
+#define CONFIG_CMD_BOOTSTREAM
+#else
+#define CONFIG_CMD_UPDATE_MMC
+#define CONFIG_SYS_STORAGE_MEDIA	"mmc"
 #endif
-#define CONFIG_BOARD_DESCRIPTION	"SBC"
 
-#define CONFIG_CONS_INDEX		1
-#define CONFIG_MXC_UART_BASE		UART4_BASE
-#define CONSOLE_DEV			"ttymxc3"
+#ifdef CONFIG_SYS_USE_NAND
+#define CONFIG_CMD_NAND_TRIMFFS
+
+/* NAND stuff */
+#define CONFIG_SYS_MAX_NAND_DEVICE	1
+#define CONFIG_SYS_NAND_BASE		0x40000000
+#define CONFIG_SYS_NAND_5_ADDR_CYCLE
+#define CONFIG_SYS_NAND_ONFI_DETECTION
+
+/* DMA stuff, needed for GPMI/MXS NAND support */
+#endif
+
+#define CONFIG_SYS_FSL_USDHC_NUM	1
+
+/* U-Boot Environment */
+#if defined(CONFIG_ENV_IS_IN_MMC)
+#undef CONFIG_ENV_SIZE
+#undef CONFIG_ENV_OFFSET
+#define CONFIG_ENV_SIZE			SZ_16K
+#define CONFIG_ENV_OFFSET		(8 * SZ_64K)
+#elif defined(CONFIG_ENV_IS_IN_SPI_FLASH)
+#undef CONFIG_ENV_SIZE
+#undef CONFIG_ENV_OFFSET
+#define CONFIG_ENV_SIZE			SZ_16K
+#define CONFIG_ENV_OFFSET		(768 * 1024)
+#define CONFIG_ENV_SPI_BUS		CONFIG_SF_DEFAULT_BUS
+#define CONFIG_ENV_SPI_CS		CONFIG_SF_DEFAULT_CS
+#define CONFIG_ENV_SPI_MODE		CONFIG_SF_DEFAULT_MODE
+#define CONFIG_ENV_SPI_MAX_HZ		CONFIG_SF_DEFAULT_SPEED
+#endif
+#define CONFIG_DYNAMIC_ENV_LOCATION
+#if (CONFIG_DDR_MB == 1024)
+# define CONFIG_ENV_PARTITION_SIZE	(3 * SZ_1M)
+#else
+# define CONFIG_ENV_PARTITION_SIZE	(1 * SZ_1M)
+#endif /* (CONFIG_DDR_MB == 1024) */
+/* The environment may use any good blocks within the "environment" partition */
+#define CONFIG_ENV_RANGE		CONFIG_ENV_PARTITION_SIZE
+
+/* Serial port */
+#define CONFIG_MXC_UART
+#define CONFIG_MXC_UART_BASE		UART5_BASE
+#undef CONFIG_CONS_INDEX
+#define CONFIG_CONS_INDEX		5
+#define CONSOLE_DEV			"ttymxc4"
 #define CONFIG_BAUDRATE			115200
 
-#undef CONFIG_DEFAULT_FDT_FILE
-#if defined(CONFIG_MX6DL) || defined(CONFIG_MX6S)
-#define CONFIG_DEFAULT_FDT_FILE		"imx6dl-" CONFIG_SYS_BOARD ".dtb"
-#elif defined(CONFIG_MX6QP)
-#define CONFIG_DEFAULT_FDT_FILE		"imx6qp-" CONFIG_SYS_BOARD ".dtb"
-#elif defined(CONFIG_MX6Q)
-#define CONFIG_DEFAULT_FDT_FILE		"imx6q-" CONFIG_SYS_BOARD ".dtb"
+/* Ethernet */
+#define CONFIG_FEC_ENET_DEV		0
+#if (CONFIG_FEC_ENET_DEV == 0)
+#define IMX_FEC_BASE			ENET_BASE_ADDR
+#define CONFIG_FEC_MXC_PHYADDR          0x0
+#define CONFIG_ETHPRIME                 "FEC0"
+#define CONFIG_FEC_XCV_TYPE             RMII
+#elif (CONFIG_FEC_ENET_DEV == 1)
+#define IMX_FEC_BASE			ENET2_BASE_ADDR
+#define CONFIG_FEC_MXC_PHYADDR          0x1
+#define CONFIG_ETHPRIME                 "FEC1"
+#define CONFIG_FEC_XCV_TYPE             RMII
 #endif
 
-#define CONFIG_SYS_FSL_USDHC_NUM	2
-
-/* Media type for firmware updates */
-#define CONFIG_SYS_STORAGE_MEDIA	"mmc"
-
-/* Ethernet PHY */
-#define CONFIG_ENET_PHYADDR_MICREL	3
-#define PHY_ANEG_TIMEOUT		8000
+/* Video */
+#ifdef CONFIG_VIDEO
+#define CONFIG_VIDEO_MXS
+#define CONFIG_CMD_BMP
+#define CONFIG_BMP_16BPP
+#define BACKLIGHT_GPIO			(IMX_GPIO_NR(4, 16))
+#define BACKLIGHT_ENABLE_POLARITY	1
+#endif
 
 /* I2C */
 #define CONFIG_SYS_I2C_MXC_I2C1
 #define CONFIG_SYS_I2C_MXC_I2C2
-#define CONFIG_SYS_I2C_MXC_I2C3
-#define CONFIG_SYS_I2C_MXC_I2C4
+
+#undef CONFIG_DEFAULT_FDT_FILE
+#define CONFIG_DEFAULT_FDT_FILE		"imx6ul-" CONFIG_SYS_BOARD ".dtb"
+
+#define CONFIG_SYS_MMC_IMG_LOAD_PART	1
+
+#undef CONFIG_BOOTCOMMAND
+#define CONFIG_BOOTCOMMAND \
+	"if run loadscript; then " \
+		"source ${loadaddr};" \
+	"fi;"
+
+#define CONFIG_COMMON_ENV	\
+	CONFIG_DEFAULT_NETWORK_SETTINGS \
+	CONFIG_EXTRA_NETWORK_SETTINGS \
+	"boot_fdt=yes\0" \
+	"bootargs_mmc_linux=setenv bootargs console=${console},${baudrate} " \
+		"${bootargs_linux} root=${mmcroot} ${mtdparts}" \
+		"${bootargs_once} ${extra_bootargs}\0" \
+	"bootargs_nfs=" \
+		"if test ${ip_dyn} = yes; then " \
+			"bootargs_ip=\"ip=dhcp\";" \
+		"else " \
+			"bootargs_ip=\"ip=\\${ipaddr}:\\${serverip}:" \
+			"\\${gatewayip}:\\${netmask}:\\${hostname}:" \
+			"eth0:off\";" \
+		"fi;\0" \
+	"bootargs_nfs_linux=run bootargs_nfs;" \
+		"setenv bootargs console=${console},${baudrate} " \
+		"${bootargs_linux} root=/dev/nfs " \
+		"${bootargs_ip} nfsroot=${serverip}:${rootpath},v3,tcp " \
+		"${mtdparts} ${bootargs_once} ${extra_bootargs}\0" \
+	"bootargs_tftp=" \
+		"if test ${ip_dyn} = yes; then " \
+			"bootargs_ip=\"ip=dhcp\";" \
+		"else " \
+			"bootargs_ip=\"ip=\\${ipaddr}:\\${serverip}:" \
+			"\\${gatewayip}:\\${netmask}:\\${hostname}:" \
+			"eth0:off\";" \
+		"fi;\0" \
+	"bootargs_tftp_linux=run bootargs_tftp;" \
+		"setenv bootargs console=${console},${baudrate} " \
+		"${bootargs_linux} root=/dev/nfs " \
+		"${bootargs_ip} nfsroot=${serverip}:${rootpath},v3,tcp " \
+		"${mtdparts} ${bootargs_once} ${extra_bootargs}\0" \
+	"console=" CONSOLE_DEV "\0" \
+	"dboot_kernel_var=zimage\0" \
+	"fdt_addr=0x83000000\0" \
+	"fdt_file=" CONFIG_DEFAULT_FDT_FILE "\0" \
+	"fdt_high=0xffffffff\0"	  \
+	"initrd_addr=0x83800000\0" \
+	"initrd_file=uramdisk.img\0" \
+	"initrd_high=0xffffffff\0" \
+	"update_addr=" __stringify(CONFIG_DIGI_UPDATE_ADDR) "\0" \
+	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
+	"recovery_file=recovery.img\0" \
+	"script=boot.scr\0" \
+	"uboot_file=u-boot.imx\0" \
+	"zimage=zImage-" CONFIG_SYS_BOARD ".bin\0"
+
+#if defined(CONFIG_NAND_BOOT)
+#define CONFIG_EXTRA_ENV_SETTINGS \
+	CONFIG_COMMON_ENV \
+	CONFIG_ENV_MTD_SETTINGS \
+	"bootargs_linux=\0" \
+	"bootargs_nand_linux=setenv bootargs console=${console},${baudrate} " \
+		"${bootargs_linux} ${mtdparts} ubi.mtd=${mtdlinuxindex} " \
+		"ubi.mtd=${mtdrootfsindex} root=ubi1_0 " \
+		"rootfstype=ubifs rw " \
+		"${bootargs_once} ${extra_bootargs}\0" \
+	"install_linux_fw_sd=if load mmc 0 ${loadaddr} install_linux_fw_sd.scr;then " \
+			"source ${loadaddr};" \
+		"fi;\0" \
+	"install_linux_fw_usb=usb start;" \
+		"if load usb 0 ${loadaddr} install_linux_fw_usb.scr;then " \
+			"source ${loadaddr};" \
+		"fi;\0" \
+	"linux_file=dey-image-qt-x11-" CONFIG_SYS_BOARD ".boot.ubifs\0" \
+	"loadscript=" \
+		"if test -z \"${mtdbootpart}\"; then " \
+			"setenv mtdbootpart " CONFIG_LINUX_PARTITION ";" \
+		"fi;" \
+		"if ubi part ${mtdbootpart}; then " \
+			"if ubifsmount ubi0:${mtdbootpart}; then " \
+				"ubifsload ${loadaddr} ${script};" \
+			"fi;" \
+		"fi;\0" \
+	"mtdbootpart=" CONFIG_LINUX_PARTITION "\0" \
+	"mtdlinuxindex=" CONFIG_ENV_MTD_LINUX_INDEX "\0" \
+	"mtdrecoveryindex=" CONFIG_ENV_MTD_RECOVERY_INDEX "\0" \
+	"mtdrootfsindex=" CONFIG_ENV_MTD_ROOTFS_INDEX "\0" \
+	"mtdupdateindex=" CONFIG_ENV_MTD_UPDATE_INDEX "\0" \
+	"recoverycmd=" \
+		"setenv mtdbootpart " CONFIG_RECOVERY_PARTITION ";" \
+		"boot\0" \
+	"rootfs_file=dey-image-qt-x11-" CONFIG_SYS_BOARD ".ubifs\0" \
+	""	/* end line */
+#else
+#define CONFIG_EXTRA_ENV_SETTINGS \
+	CONFIG_COMMON_ENV \
+	"bootcmd_mfg=fastboot " __stringify(CONFIG_FASTBOOT_USB_DEV) "\0" \
+	"loadscript=load mmc ${mmcbootdev}:${mmcpart} ${loadaddr} ${script}\0" \
+	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
+	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
+	"mmcautodetect=yes\0" \
+	"mmcargs=setenv bootargs console=${console},${baudrate} " \
+		"${mtdparts} " \
+		"root=${mmcroot}\0" \
+	""	/* end line */
+#endif
+
+#define CONFIG_SYS_MMC_ENV_DEV		0   /* USDHC2 */
+#define CONFIG_SYS_MMC_ENV_PART		0	/* user area */
+#define CONFIG_MMCROOT			"/dev/mmcblk1p2"  /* USDHC2 */
 
 /* Carrier board version and ID commands */
 #define CONFIG_CMD_BOARD_VERSION
@@ -65,7 +225,7 @@
 /* Carrier board version in OTP bits */
 #define CONFIG_HAS_CARRIERBOARD_VERSION
 #ifdef CONFIG_HAS_CARRIERBOARD_VERSION
-/* For the SBC, the carrier board version is stored in Bank 4 Word 6 (GP1)
+/* The carrier board version is stored in Bank 4 Word 6 (GP1)
  * in bits 3..0 */
 #define CONFIG_CARRIERBOARD_VERSION_ON_OTP
 #define CONFIG_CARRIERBOARD_VERSION_BANK	4
@@ -77,131 +237,16 @@
 /* Carrier board ID in OTP bits */
 #define CONFIG_HAS_CARRIERBOARD_ID
 #ifdef CONFIG_HAS_CARRIERBOARD_ID
-/* For the SBC, the carrier board ID is stored in Bank 4 Word 6 (GP1)
+/* The carrier board ID is stored in Bank 4 Word 6 (GP1)
  * in bits 11..4 */
 #define CONFIG_CARRIERBOARD_ID_ON_OTP
 #define CONFIG_CARRIERBOARD_ID_BANK	4
 #define CONFIG_CARRIERBOARD_ID_WORD	6
 #define CONFIG_CARRIERBOARD_ID_MASK	0xff
 #define CONFIG_CARRIERBOARD_ID_OFFSET	4
-
-/*
- * Custom carrier board IDs
- * Define here your custom carrier board ID numbers (between 1 and 127)
- * Use these defines to run conditional code basing on your carrier board
- * design.
- */
-
-/* Digi ConnectCore 6 carrier board IDs */
-#define CCIMX6SBC_ID129		129
-#define CCIMX6SBC_ID130		130
-#define CCIMX6SBC_ID131		131
-#define CCIMX6QPSBC_ID160	160
 #endif /* CONFIG_HAS_CARRIERBOARD_ID */
 
-#define CONFIG_EXTRA_ENV_SETTINGS \
-	CONFIG_DEFAULT_NETWORK_SETTINGS \
-	RANDOM_UUIDS \
-	"dboot_kernel_var=zimage\0" \
-	"script=boot.scr\0" \
-	"loadscript=load mmc ${mmcbootdev}:${mmcpart} ${loadaddr} ${script}\0" \
-	"uimage=uImage-qctech.bin\0" \
-	"zimage=zImage-qctech.bin\0" \
-	"fdt_file=" CONFIG_DEFAULT_FDT_FILE "\0" \
-	"fdt_addr=0x18000000\0" \
-	"initrd_addr=0x19000000\0" \
-	"initrd_file=uramdisk.img\0" \
-	"boot_fdt=try\0" \
-	"ip_dyn=yes\0" \
-	"phy_mode=auto\0" \
-	"console=" CONSOLE_DEV "\0" \
-	"fdt_high=0xffffffff\0"	  \
-	"initrd_high=0xffffffff\0" \
-	"update_addr=" __stringify(CONFIG_DIGI_UPDATE_ADDR) "\0" \
-	"mmcbootpart=" __stringify(EMMC_BOOT_PART) "\0" \
-	"mmcdev=0\0" \
-	"mmcpart=" CONFIG_BOOT_PARTITION "\0" \
-	"mmcargs=setenv bootargs console=${console},${baudrate} ${smp} " \
-		"root=/dev/mmcblk0p2 rootwait rw\0" \
-	"loaduimage=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${uimage}\0" \
-	"loadzimage=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${zimage}\0" \
-	"loadinitrd=load mmc ${mmcdev}:${mmcpart} ${initrd_addr} ${initrd_file}\0" \
-	"loadfdt=load mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
-	"uboot_file=u-boot.imx\0" \
-	"boot_file=boot.img\0" \
-	"system_file=system.img\0" \
-	"partition_mmc_android=mmc rescan;" \
-		"if mmc dev ${mmcdev} 0; then " \
-			"gpt write mmc ${mmcdev} ${parts_android};" \
-			"mmc rescan;" \
-		"else " \
-			"if mmc dev ${mmcdev};then " \
-				"gpt write mmc ${mmcdev} ${parts_android};" \
-				"mmc rescan;" \
-			"else;" \
-			"fi;" \
-		"fi;\0" \
-	"bootargs_mmc_android=setenv bootargs console=${console},${baudrate} " \
-		"${bootargs_android} " \
-		"${bootargs_once} ${extra_bootargs}\0" \
-	"bootargs_tftp=" \
-		"if test ${ip_dyn} = yes; then " \
-			"bootargs_ip=\"ip=dhcp\";" \
-		"else " \
-			"bootargs_ip=\"ip=\\${ipaddr}:\\${serverip}:" \
-			"\\${gatewayip}:\\${netmask}:\\${hostname}:" \
-			"eth0:off\";" \
-		"fi;\0" \
-	"bootargs_tftp_android=run bootargs_tftp;" \
-		"setenv bootargs console=${console},${baudrate} " \
-		"${bootargs_android} root=/dev/nfs " \
-		"${bootargs_ip} nfsroot=${serverip}:${rootpath},v3,tcp " \
-		"${bootargs_once} ${extra_bootargs}\0" \
-	"bootargs_nfs_android=run bootargs_tftp_android\0" \
-	"mmcroot=PARTUUID=1c606ef5-f1ac-43b9-9bb5-d5c578580b6b\0" \
-	"bootargs_mmc_linux=setenv bootargs console=${console},${baudrate} " \
-		"${bootargs_linux} root=${mmcroot} rootwait rw " \
-		"${bootargs_once} ${extra_bootargs}\0" \
-	"bootargs_tftp_linux=run bootargs_tftp;" \
-		"setenv bootargs console=${console},${baudrate} " \
-		"${bootargs_linux} root=/dev/nfs " \
-		"${bootargs_ip} nfsroot=${serverip}:${rootpath},v3,tcp " \
-		"${bootargs_once} ${extra_bootargs}\0" \
-	"bootargs_nfs_linux=run bootargs_tftp_linux\0" \
-	"linux_file=dey-image-qt-xwayland-" CONFIG_SYS_BOARD ".boot.vfat\0" \
-	"rootfs_file=dey-image-qt-xwayland-" CONFIG_SYS_BOARD ".ext4\0" \
-	"partition_mmc_linux=mmc rescan;" \
-		"if mmc dev ${mmcdev} 0; then " \
-			"gpt write mmc ${mmcdev} ${parts_linux};" \
-			"mmc rescan;" \
-		"else " \
-			"if mmc dev ${mmcdev};then " \
-				"gpt write mmc ${mmcdev} ${parts_linux};" \
-				"mmc rescan;" \
-			"else;" \
-			"fi;" \
-		"fi;\0" \
-	"recoverycmd=setenv mmcpart " CONFIG_RECOVERY_PARTITION ";" \
-		"boot\0" \
-	"recovery_file=recovery.img\0" \
-	"install_android_fw_sd=if load mmc 1 ${loadaddr} " \
-		"install_android_fw_sd.scr;then " \
-			"source ${loadaddr};" \
-		"fi;\0" \
-	"install_linux_fw_sd=if load mmc 1 ${loadaddr} " \
-		"install_linux_fw_sd.scr;then " \
-			"source ${loadaddr};" \
-		"fi;\0" \
-	"install_linux_fw_usb=usb start;" \
-		"if load usb 0 ${loadaddr} install_linux_fw_usb.scr;then " \
-			"source ${loadaddr};" \
-		"fi;\0" \
-	""	/* end line */
+/* UBI and UBIFS support */
+#define CONFIG_DIGI_UBI
 
-#undef CONFIG_BOOTCOMMAND
-#define CONFIG_BOOTCOMMAND \
-	"if run loadscript; then " \
-		"source ${loadaddr};" \
-	"fi;"
-
-#endif                         /* __CCIMX6SBC_CONFIG_H */
+#endif /* CCIMX6ULSBC_CONFIG_H */
