@@ -160,6 +160,7 @@
 	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
 	"recovery_file=recovery.img\0" \
 	"script=boot.scr\0" \
+	"board_rs485=0x01\0" \
 	"uboot_file=u-boot.imx\0" \
 	"zimage=zImage-" CONFIG_SYS_BOARD ".bin\0"
 
